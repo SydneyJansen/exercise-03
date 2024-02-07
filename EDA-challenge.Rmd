@@ -1,0 +1,54 @@
+---
+title: "EDA-challenge.Rmd"
+author: "Sydney Jansen"
+date: "2024-02-06"
+output: html_document
+---
+##Step 1
+```{r }
+# Read the CSV file and assign the resulting dataframe to a variable
+library(tidyverse)
+f<-("C:/Users/Wildc/Downloads/data-wrangling.csv")
+d<-read.csv(f, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+names(d)
+str(df)
+
+# Now use head() on the dataframe to display the first few rows
+df<-data
+head(df)
+#create new variable for body size dimorphism: ratio of average male to female body mass.
+df$BSD <- df$Body_mass_male_mean / df$Body_mass_female_mean
+
+# Create sex_ratio as the ratio of the number of adult females to adult males
+# Here won't recognize variables
+sex_ratio<- ifelse(df$AdultMales > 0, df$AdultFemales / df$AdultMales, NA)
+str(df$AdultMales,df$AdultFemales)
+df[[9,10]]
+df$sex_ratio <- df$AdultFemales / df$AdultMales
+
+
+# Create DI (Defensibility Index) as the ratio of day range length to the diameter of the home range
+df$DI <- df$DayLength_km / df$HomeRange_km2
+
+install.packages("ggplot2")  
+library(ggplot2)             #
+
+```
+
+## R Markdown
+
+
+```{r }
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
