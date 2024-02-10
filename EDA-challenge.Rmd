@@ -3,52 +3,88 @@ title: "EDA-challenge.Rmd"
 author: "Sydney Jansen"
 date: "2024-02-06"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 ##Step 1
 ```{r }
 # Read the CSV file and assign the resulting dataframe to a variable
-library(tidyverse)
+library(tidyverse, dplyr)
 f<-("C:/Users/Wildc/Downloads/data-wrangling.csv")
 d<-read.csv(f, sep = ",", header = TRUE, stringsAsFactors = FALSE)
 names(d)
-str(df)
 
 # Now use head() on the dataframe to display the first few rows
 df<-data
 head(df)
 #create new variable for body size dimorphism: ratio of average male to female body mass.
-df$BSD <- df$Body_mass_male_mean / df$Body_mass_female_mean
+df <- df |>
+  mutate(BSD = Body_mass_male_mean / Body_mass_female_mean)
 
 # Create sex_ratio as the ratio of the number of adult females to adult males
 # Here won't recognize variables
-sex_ratio<- ifelse(df$AdultMales > 0, df$AdultFemales / df$AdultMales, NA)
-str(df$AdultMales,df$AdultFemales)
-df[[9,10]]
-df$sex_ratio <- df$AdultFemales / df$AdultMales
-
+df <- df |>
+  mutate(sex_ratio = AdultFemale/AdultMales)
 
 # Create DI (Defensibility Index) as the ratio of day range length to the diameter of the home range
-df$DI <- df$DayLength_km / df$HomeRange_km2
+##
+df <- df |>
+  mutate(
+    home_range_diameter = 2 * sqrt(HomeRange_km2 / pi),
+    DI = DayLength_km / home_range_diameter
+  )
 
-install.packages("ggplot2")  
-library(ggplot2)             #
+library(ggplot2)             
+str(df)
 
+p <- ggplot(data = df, aes(x = Family, y = DI)) +
+  geom_boxplot(na.rm = TRUE)
+print(p)
+
+  
+geom_point() +
+  labs(title = "Day Range Length vs. Time Spent Moving",
+       x = "Time Spent Moving",
+       y = "Day Range Length") +
+  theme_minimal()
+
+#I cannot figure out how to scale down the plot ggplot(df, aes(x = Move, y = DayLength_km, color = Species)) +
+ggplot(df, aes(x = DI, y = DayLength_km)) +
+  geom_point() +
+  labs(title = "Day Range Length vs. Time Spent Moving",
+       x = "Time Spent Moving",
+       y = "Day Range Length") +
+  theme_minimal()
+ 
 ```
 
-## R Markdown
-
+## Do species that spend more time moving travel farther overall? 
+  No
+How about within any particular primate family?
+  Families that travel for longer period travel farther (Cebidae) 
+Should you transform either of these variables?
+  I need to transform the species to fit the graph
 
 ```{r }
-
+p <- ggplot(data = d, aes(x = log(Body_mass_female_mean), y = log(Brain_Size_Species_Mean),
+    color = factor(Family)))  # first, we build a plot object and color points by Family
+# then we modify the axis labels
+p <- p + xlab("log(Female Body Mass)") + ylab("log(Female Brain Size)")
+# then we make a scatterplot
+p <- p + geom_point(na.rm = TRUE)
+# then we modify the legend
+p <- p + theme(legend.position = "bottom", legend.title = element_blank())
+# and, finally, we plot the object
+p
 
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
+## Do species that live in larger groups travel farther overall? 
+How about within any particular primate family?
+Should you transform either of these variables?
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Do taxa with greater size dimorphism also show greater canine dimorphism?
