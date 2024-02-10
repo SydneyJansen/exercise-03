@@ -27,7 +27,7 @@ df <- df |>
   mutate(sex_ratio = AdultFemale/AdultMales)
 
 # Create DI (Defensibility Index) as the ratio of day range length to the diameter of the home range
-##
+
 df <- df |>
   mutate(
     home_range_diameter = 2 * sqrt(HomeRange_km2 / pi),
@@ -45,16 +45,20 @@ print(p)
 geom_point() +
   labs(title = "Day Range Length vs. Time Spent Moving",
        x = "Time Spent Moving",
-       y = "Day Range Length") +
+       y = "Day Range Length",
+       color= Species) +
   theme_minimal()
 
-#I cannot figure out how to scale down the plot ggplot(df, aes(x = Move, y = DayLength_km, color = Species)) +
-ggplot(df, aes(x = DI, y = DayLength_km)) +
+
+ggplot(df, aes(x = DI, y = DayLength_km, color = Family)) +
   geom_point() +
   labs(title = "Day Range Length vs. Time Spent Moving",
        x = "Time Spent Moving",
-       y = "Day Range Length") +
+       y = "Day Range Length",
+       ) +
   theme_minimal()
+
+
  
 ```
 
@@ -63,28 +67,81 @@ ggplot(df, aes(x = DI, y = DayLength_km)) +
 How about within any particular primate family?
   Families that travel for longer period travel farther (Cebidae) 
 Should you transform either of these variables?
-  I need to transform the species to fit the graph
+  No
 
 ```{r }
-p <- ggplot(data = d, aes(x = log(Body_mass_female_mean), y = log(Brain_Size_Species_Mean),
-    color = factor(Family)))  # first, we build a plot object and color points by Family
-# then we modify the axis labels
-p <- p + xlab("log(Female Body Mass)") + ylab("log(Female Brain Size)")
-# then we make a scatterplot
-p <- p + geom_point(na.rm = TRUE)
-# then we modify the legend
-p <- p + theme(legend.position = "bottom", legend.title = element_blank())
-# and, finally, we plot the object
-p
+ggplot(df, aes(x = DI, y =  MeanGroupSize, color= Family)) +
+  geom_point() +
+  labs(title = "Day Range Length vs. Time Spent Moving",
+       x = "Time Spent Moving",
+       y = "Time Group Size") +
+  theme_minimal()
 
 ```
 
-## Do species that live in larger groups travel farther overall? 
+## Do species that live in larger groups travel farther overall?
+  Larger groups, less moving
 How about within any particular primate family?
+  Cebidae spends more time moving with a large group
 Should you transform either of these variables?
+  No
+```{r}
+#overall
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+ggplot(df, aes(x = BSD, y= Canine_Dimorphism)) +
+  geom_point() +
+  labs(title = "body size dimorphism and canine size dimorphism",
+     x = "BSD",
+       y = "Canine") +
+  theme_minimal()
+#family
+ggplot(df, aes(x = BSD, y= Canine_Dimorphism , color= Family)) +
+  geom_point() +
+  labs(title = "body size dimorphism and canine size dimorphism",
+     x = "BSD",
+       y = "Canine") +
+  theme_minimal()
 ```
 
 #Do taxa with greater size dimorphism also show greater canine dimorphism?
+Yes
+
+```{r}
+df <- df |>
+  mutate(diet_strategy = case_when(
+    Fruit    > 50 ~ "frugivore",
+    Leaves > 50 ~ "folivore",
+    TRUE ~ "omnivore"
+  ))
+
+
+# Plotting group size by dietary strategy
+ggplot(df, aes(x = diet_strategy, y = MeanGroupSize, fill = diet_strategy)) +
+  geom_boxplot() +
+  labs(title = "Group Size by Dietary Strategy",
+       x = "Dietary Strategy",
+       y = "Group Size") +
+  theme_minimal()
+
+```
+#Do frugivores live in larger groups than folivores?
+No
+```{r}
+library(dplyr)
+f<-("C:/Users/Wildc/Downloads/data-wrangling.csv")
+d<-read.csv(f, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+names(d)
+
+d <- d |>
+  mutate(Binomial = paste(Genus, Species)) |>
+  select(Binomial, Family, Brain_Size_Species_Mean, Body_mass_male_mean) |>
+  group_by(Family) |>
+ summarise( 
+    Avg_Brain_size_species_mean = mean(Brain_Size_Species_Mean, na.rm = TRUE),
+    Avg_Body_mass_male_mean = mean(Body_mass_male_mean, na.rm = TRUE)
+)|>
+  arrange(Avg_Brain_size_species_mean)
+
+
+print(d)
+```
